@@ -1,9 +1,9 @@
 from flask import Flask
-import config
+from config import Config
 
 app = Flask(__name__)
 
-app_config = config.DEVELOPMENT
+app_config = Config().development()
 
 @app.route("/")
 def index():

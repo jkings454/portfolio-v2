@@ -1,10 +1,15 @@
 import os
 
 class Config:
-    def __init__(self, db_uri, debug, host, port):
-        self.db_uri = db_uri
-        self.debug = debug
-        self.host = host
-        self.port = port
-
-DEVELOPMENT = Config(os.environ("PORTFOLIO_URI"), True, "127.0.0.1", 3000)
+    def __init__(self):
+        self.db_uri = ""
+        self.debug = False
+        self.host = ""
+        self.port = 0
+    
+    def development(self):
+        self.db_uri = os.environ["PORTFOLIO_URI"]
+        self.debug = False
+        self.host = "127.0.0.1"
+        self.port = 3000
+        return self
