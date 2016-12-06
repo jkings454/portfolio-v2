@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import create_engine
 from passlib.apps import custom_app_context as pwd_context
+from app import app_config
 
 Base = declarative_base()
 
@@ -30,3 +31,6 @@ class User(Base):
     def check_hash(self, password):
         """Verifies a password"""
         return pwd_context.verify(password, self.password_hash)
+
+engine = create_engine(app_config.db_uri)
+Base.metadata.create_all(engine)

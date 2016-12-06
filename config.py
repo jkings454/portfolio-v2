@@ -1,4 +1,10 @@
+import os
+
 class Config:
-    pass
-    
-#TODO: write a configuration class in order to deal with production and development environments
+    def __init__(self, db_uri, debug, host, port):
+        self.db_uri = db_uri
+        self.debug = debug
+        self.host = host
+        self.port = port
+
+DEVELOPMENT = Config(os.environ("PORTFOLIO_URI"), True, "127.0.0.1", 3000)
