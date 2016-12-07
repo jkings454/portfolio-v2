@@ -1,12 +1,15 @@
+"""
+Describes the database schema using SQLAlchemy.
+"""
 from sqlalchemy import Column, String, Integer, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import create_engine
 from passlib.apps import custom_app_context as pwd_context
-from app import app_config
+from config import Config
 
 Base = declarative_base()
-
+app_config = Config().development()
 
 class User(Base):
     """
@@ -33,6 +36,9 @@ class User(Base):
         return pwd_context.verify(password, self.password_hash)
 
 class Project(Base):
+    """
+    Represents a basic project. Nothing fancy here.
+    """
     __tablename__ = "project"
     name = Column(String, nullable=False)
     description = Column(String)
@@ -46,7 +52,20 @@ class Project(Base):
         "polymorphic_on":type
     }
 
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description':self.description,
+            'user_id':self.user_id,
+            'type':self.type
+        }
+
 class ImageProject(Project):
+    """
+    Represents a project that is primarily an image.
+    """
     __tablename__ = "image project"
     id = Column(Integer, ForeignKey("project.id"), primary_key=True)
     image_url = Column(String, nullable=False)
@@ -55,8 +74,22 @@ class ImageProject(Project):
         "polymorphic_identity":"image project",
     }
 
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description':self.description,
+            'user_id':self.user_id,
+            'type':self.type,
+            'image_url':self.image_url
+        }
+
 
 class TextProject(Project):
+    """
+    Represents a project consisting mostly of text.
+    """
     __tablename__ = "text project"
     id = Column(Integer, ForeignKey("project.id"), primary_key=True)
     content = Column(String, nullable=False)
@@ -65,6 +98,18 @@ class TextProject(Project):
     __mapper_args__ = {
         "polymorphic_identity":"text project",
     }
+
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description':self.description,
+            'user_id':self.user_id,
+            'type':self.type,
+            'content':self.content,
+            'content_type':self.content_type
+        }
 
 
 engine = create_engine(app_config.db_uri)
