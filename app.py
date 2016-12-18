@@ -1,7 +1,7 @@
 """
 This is the entry point of the application.
 """
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from config import Config
 from models import User, Project, ImageProject, TextProject, Base
 from sqlalchemy.orm import sessionmaker
@@ -24,6 +24,10 @@ def index():
 def get_api_projects():
     projects = session.query(Project).all()
     return jsonify([i.serialize for i in projects])
+
+@app.route("/api/v1/projects", methods=["POST"])
+def post_api_project():
+    return "Are these your arguments? %s" % request.args.get('key', '')
 
 @app.route("/api/v1/projects/<int:project_id>")
 def get_api_project(project_id):
