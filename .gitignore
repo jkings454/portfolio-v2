@@ -2,8 +2,6 @@ venv
 
 node_modules
 
-package.json
-
 .vscode
 Visual\ Studio
 

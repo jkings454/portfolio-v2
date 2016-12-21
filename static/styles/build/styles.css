@@ -1,4 +1,6 @@
 .test {
-  color: #fff; }
+  color: grey;
+  background-color: darkgrey; }
 
-/*# sourceMappingURL=styles.css.map */
+.test2 {
+  font-family: Verdana, Geneva, Tahoma, sans-serif; }

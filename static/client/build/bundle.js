@@ -21767,7 +21767,15 @@
 	        return React.createElement(
 	            'nav',
 	            { className: 'navbar navbar-default navbar-static-top' },
-	            React.createElement('div', { className: 'container' })
+	            React.createElement(
+	                'div',
+	                { className: 'container' },
+	                React.createElement(
+	                    'h1',
+	                    null,
+	                    'Hello world!'
+	                )
+	            )
 	        );
 	    }
 	});

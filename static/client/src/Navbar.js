@@ -6,7 +6,7 @@ var Navbar = React.createClass({
         return (
             <nav className = 'navbar navbar-default navbar-static-top'>
                 <div className='container'>
-                    
+                    <h1>Hello world!</h1>
                 </div>
             </nav>);
     },
