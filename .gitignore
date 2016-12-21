@@ -5,7 +5,7 @@ node_modules
 .vscode
 Visual\ Studio
 
-package.json
+static/client/build
 
 node_modules
 
