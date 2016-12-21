@@ -1,7 +1,7 @@
 """
 This is the entry point of the application.
 """
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, url_for
 from config import Config
 from models import User, Project, ImageProject, TextProject, Base
 from sqlalchemy.orm import sessionmaker
