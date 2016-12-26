@@ -16,3 +16,5 @@ webpack.config.js
 .sass-cache
 
 *.map
+
+secrets.json
