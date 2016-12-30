@@ -21,5 +21,9 @@ Here are the currently available methods:
 |--------|----------------------|-----------------------------------------------------|------------|
 |GET     |`/api/v1/projects`    |Gets all projects                                    |Unauthorized|
 |GET     |`/api/v1/projects/id` |Returns project of the specified id                  |Unauthorized|
-|POST    |`/token`              |Returns a session token if the user is authenticated.| Authorized|
+|POST    |`/token`              |Returns a session token if the user is authenticated.| Authorized |
+|POST    |`/api/v1/projects`    |Adds a new project to the database                   | Authorized |
+|PATCH   |`/api/v1/projects/id` |Updates the project with a the designated id         | Authorized |
+|DELETE  |`/api/v1/projects/id` |Removes the project from the database                | Authorized |
+
 
