@@ -18,3 +18,5 @@ webpack.config.js
 *.map
 
 secrets.json
+
+*.pyc
