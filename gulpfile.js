@@ -10,9 +10,9 @@ gulp.task('build-scss', function() {
 
 gulp.task('build-js', shell.task(['webpack']));
 
-gulp.task('build', ['build-js', 'build-scss'])
+gulp.task('build', ['build-js', 'build-scss']);
 
 gulp.task('watch', function() {
     gulp.watch('static/client/src/**/*.js', ['build-js']);
     gulp.watch('static/styles/src/**/*.scss', ['build-scss'])
-})
+});

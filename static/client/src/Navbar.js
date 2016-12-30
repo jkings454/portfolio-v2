@@ -2,16 +2,24 @@
  * A basic Navbar template with room for links!
  */
 const React = require('react');
-const ReactDOM = require('react-dom');
+import {Link} from 'react-router';
 
 const Navbar = React.createClass({
+    getInitialState: function() {
+        return {
+            pages: {
+                "Blog":"/blog",
+                "Projects":"/projects",
+        }}
+    },
     render: function () {
-        let pages = this.props.pages;
+        let pages = this.state.pages;
+        let currentPage = this.props.currentPage;
         return (
             <nav className='navbar navbar-default navbar-static-top'>
                 <div className='container'>
                     <div className='navbar-header'>
-                        <a href='/' className='navbar-brand'>Josh Nichols</a>
+                        <Link className = "navbar-brand" to="/">Josh Nichols</Link>
                         <button type='button' className='navbar-toggle'
                             data-toggle='collapse' data-target='#my-collapse'>
                             <span className='icon-bar'></span>
@@ -21,9 +29,13 @@ const Navbar = React.createClass({
                     </div>
                     <div className='collapse navbar-collapse' id='my-collapse'>
                         <ul className='nav navbar-nav navbar-right'>
-                            <li><a href = "/">Index</a></li>
                             {Object.keys(pages).map(function(key) {
-                                return <li><a href = {pages[key]}>{key}</a></li>;
+                                if (key == currentPage) {
+                                    return (<li className="active" key={key}>
+                                        <Link to={pages[key]}>{key}</Link>
+                                    </li>)
+                                }
+                                return <li key={key}><Link to={pages[key]}>{key}</Link></li>;
                             })}
                         </ul>
                     </div>

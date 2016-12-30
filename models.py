@@ -7,9 +7,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import create_engine
 from passlib.apps import custom_app_context as pwd_context
 from config import Config
+import random, string
+from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
 Base = declarative_base()
 app_config = Config().development()
+secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
 
 class User(Base):
     """
@@ -23,17 +26,32 @@ class User(Base):
     id = Column(Integer, primary_key=True)
 
     def make_hash(self, password):
-        """
-        Hashes a password in order to store it more securely.
-
-        Keyword arguments:
-        password -- The RAW password that you wish to hash.
-        """
         self.password_hash = pwd_context.encrypt(password)
 
     def check_hash(self, password):
-        """Verifies a password"""
+        """Verifies a password
+        :param password: the password to verify
+        :return: boolean representing whether or not the verification succeeded.
+        """
         return pwd_context.verify(password, self.password_hash)
+
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(secret_key, expires_in=expiration)
+        return s.dumps({'id': self.id})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(secret_key)
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None
+        except BadSignature:
+            return None
+
+        user_id = data['id']
+        return user_id
+
 
 class Project(Base):
     """
