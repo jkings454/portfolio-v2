@@ -20,3 +20,5 @@ webpack.config.js
 secrets.json
 
 *.pyc
+
+.idea
