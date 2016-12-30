@@ -89,7 +89,7 @@ class ImageProject(Project):
     image_url = Column(String, nullable=False)
 
     __mapper_args__ = {
-        "polymorphic_identity":"image project",
+        "polymorphic_identity":"image_project",
     }
 
     @property
@@ -114,7 +114,7 @@ class TextProject(Project):
     content_type = Column(Enum("code", "word", "plaintext", name="type"))
 
     __mapper_args__ = {
-        "polymorphic_identity":"text project",
+        "polymorphic_identity":"text_project",
     }
 
     @property

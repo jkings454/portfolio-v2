@@ -1,15 +1,17 @@
 """
 This is the entry point of the application.
 """
-from flask import Flask, render_template, jsonify, request, url_for, g
+from flask import Flask, render_template, jsonify, request, g
 from config import Config
 from models import User, Project, ImageProject, TextProject, Base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from flask_httpauth import HTTPBasicAuth
+from flask_cors import CORS
 
 auth = HTTPBasicAuth()
 app = Flask(__name__)
+CORS(app, resources={r'/api/*':{'origins':'*'}})
 
 app_config = Config().development()
 
@@ -40,6 +42,7 @@ def get_token():
 
 @app.route("/")
 @app.route("/blog")
+@app.route("/projects")
 def index():
     return render_template("index.html")
 
@@ -53,14 +56,70 @@ def get_api_projects():
 @app.route("/api/v1/projects", methods=["POST"])
 @auth.login_required
 def post_api_project():
-    return "Are these your arguments? %s" % request.args.get('key', '')
+    name = request.form.get('name', type=str)
+    type = request.form.get('type', type=str)
+    user_id = g.user.id
+    description = request.form.get('description', type=str)
+    if type == "image_project":
+        image_url = request.form.get('image_url', type=str)
+        new_project = ImageProject(name=name, type=type, user_id=user_id, description=description, image_url=image_url)
+        session.add(new_project)
+        session.commit()
+        return jsonify(new_project.serialize)
+    elif type == "text_project":
+        content = request.form.get('content', type='str')
+        content_type = request.form.get('content_type', type='str')
+        new_project = TextProject(name=name, type=type, user_id=user_id, description=description, content=content,
+                                  content_type=content_type)
+        session.add(new_project)
+        session.commit()
+        return jsonify(new_project.serialize)
+    elif type == "project":
+        new_project = Project(name=name, type=type, user_id=user_id, description=description)
+        session.add(new_project)
+        session.commit()
+        return jsonify(new_project.serialize)
+    else:
+        return jsonify({"error creating project":"the type is invalid or missing."}), 400
+
+
 
 
 @app.route("/api/v1/projects/<int:project_id>")
 def get_api_project(project_id):
-    project = session.query(Project).filter_by(id=project_id).one()
+    project = session.query(Project).filter_by(id=project_id).first()
     return jsonify(project.serialize)
 
+@app.route("/api/v1/projects/<int:project_id>", methods=["PATCH", "DELETE"])
+@auth.login_required
+def patch_delete_api_project(project_id):
+    project = session.query(Project).filter_by(id=project_id).first()
+    if g.user.id != project.user_id:
+        return "Unauthorized access", 401
+    if request.method == "PATCH":
+        project.name = request.args.get("name", type=str)
+        project.description = request.args.get("description", type=str)
+        if project.type == "image_project":
+            project.image_url = request.args.get("image_url", type=str)
+            session.add(project)
+            session.commit()
+            return jsonify(project.serialize)
+        elif project.type == "text_project":
+            project.content = request.args.get("content", type=str)
+            project.content_type = request.args.get("content_type", type=str)
+            session.add(project)
+            session.commit()
+            return jsonify(project.serialize)
+        elif project.type == "project":
+            session.add(project)
+            session.commit()
+            return jsonify(project.serialize)
+        else:
+            return jsonify({"Something went horribly wrong": "type invalid or not provided"}), 500
+    else:
+        session.delete(project)
+        session.commit()
+        return jsonify(project.serialize)
 
 if __name__ == "__main__":
     app.run(debug=app_config.debug, host=app_config.host, port=app_config.port)

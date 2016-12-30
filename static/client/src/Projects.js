@@ -9,6 +9,9 @@ const Projects = React.createClass({
         return (
             <div>
                 <Navbar currentPage = "Projects"/>
+                <div className = "container">
+                    <h1>Welcome to the projects page!</h1>
+                </div>
             </div>
         )
     }
