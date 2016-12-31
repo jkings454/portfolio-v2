@@ -43,6 +43,7 @@ def get_token():
 @app.route("/")
 @app.route("/blog")
 @app.route("/projects")
+@app.route("/login")
 def index():
     return render_template("index.html")
 
