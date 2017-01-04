@@ -2,18 +2,18 @@
 This is the entry point of the application.
 """
 from flask import Flask, render_template, jsonify, request, g
-from config import Config
 from models import User, Project, ImageProject, TextProject, Base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from flask_httpauth import HTTPBasicAuth
 from flask_cors import CORS
+from config import Config
 
 auth = HTTPBasicAuth()
 app = Flask(__name__)
 CORS(app, resources={r'/api/*':{'origins':'*'}})
 
-app_config = Config().development()
+app_config = Config.development()
 
 engine = create_engine(app_config.db_uri)
 Base.metadata.bind = engine
@@ -68,8 +68,8 @@ def post_api_project():
         session.commit()
         return jsonify(new_project.serialize)
     elif type == "text_project":
-        content = request.form.get('content', type='str')
-        content_type = request.form.get('content_type', type='str')
+        content = request.form.get('content', type=str)
+        content_type = request.form.get('content_type', type=str)
         new_project = TextProject(name=name, type=type, user_id=user_id, description=description, content=content,
                                   content_type=content_type)
         session.add(new_project)
@@ -98,16 +98,16 @@ def patch_delete_api_project(project_id):
     if g.user.id != project.user_id:
         return "Unauthorized access", 401
     if request.method == "PATCH":
-        project.name = request.args.get("name", type=str)
-        project.description = request.args.get("description", type=str)
+        project.name = request.args.get("name", type=str) or project.name
+        project.description = request.args.get("description", type=str) or project.description
         if project.type == "image_project":
-            project.image_url = request.args.get("image_url", type=str)
+            project.image_url = request.args.get("image_url", type=str) or project.image_url
             session.add(project)
             session.commit()
             return jsonify(project.serialize)
         elif project.type == "text_project":
-            project.content = request.args.get("content", type=str)
-            project.content_type = request.args.get("content_type", type=str)
+            project.content = request.args.get("content", type=str) or project.content
+            project.content_type = request.args.get("content_type", type=str) or project.content_type
             session.add(project)
             session.commit()
             return jsonify(project.serialize)

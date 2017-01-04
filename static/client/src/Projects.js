@@ -19,6 +19,9 @@ const Projects = React.createClass({
         this.setState({projects: data});
     },
     render: function() {
+        let loggedIn = this.props.authenticated;
+        let deleteProject = this.deleteProject;
+
         return (
             <div>
                 <Navbar currentPage = "Projects"/>
@@ -28,12 +31,28 @@ const Projects = React.createClass({
                             <div key = {project.id}>
                                 <h1>{project.name}</h1>
                                 <p>{project.description}</p>
+                                {
+                                    loggedIn &&
+                                    <a href = "#" onClick = {() => deleteProject(project.id)}>Delete project</a>
+                                }
                             </div>);
                     })}
 
                 </div>
             </div>
         )
+    },
+    deleteProject: function(projectID) {
+        $.ajax({
+            method: "DELETE",
+            dataType: "json",
+            url: "/api/v1/projects/" + projectID,
+            success: this.deleteSuccess
+        })
+    },
+    deleteSuccess: function(data) {
+        alert("\"" + data.name + "\" was successfully deleted!");
+        location.reload();
     }
 });
 
