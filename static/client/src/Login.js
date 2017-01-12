@@ -82,6 +82,7 @@ const Login = React.createClass({
             dataType: 'json',
             method: 'GET',
             url: '/token',
+            cache: false,
             username: username,
             password: password,
             success: this.loginSuccess,

@@ -3,7 +3,6 @@ Helper class to store config variables.
 """
 import json
 
-
 class Config:
     """
     Types: development, production
@@ -18,10 +17,9 @@ class Config:
     @staticmethod
     def development():
         """
-        In this configuration the database uri is set to the environment variable "PORTFOLIO_URI"
-        debug is set to True, the host is set to localhost, and the port is by default 3000.
+        NOTICE: A secrets.json file is REQUIRED for this to work.
         """
-        fo = open("/home/josh/Projects/portfolio-v2/secrets.json")
+        fo = open("secrets.json")
         secrets = json.load(fo)
         fo.close()
 

@@ -14,6 +14,86 @@ Base = declarative_base()
 app_config = Config.development()
 secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
 
+
+class Project(Base):
+    """
+    Represents a basic project. Nothing fancy here.
+    """
+    __tablename__ = "project"
+    name = Column(String, nullable=False)
+    description = Column(String)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    course_id = Column(Integer, ForeignKey('course.id'))
+    type = Column(String(50))
+
+    __mapper_args__ = {
+        "polymorphic_identity": "project",
+        "polymorphic_on": type
+    }
+
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description':self.description,
+            'user_id':self.user_id,
+            'course_id':self.course_id,
+            'type':self.type
+        }
+
+class ImageProject(Project):
+    """
+    Represents a project that is primarily an image.
+    """
+    __tablename__ = "image project"
+    id = Column(Integer, ForeignKey("project.id"), primary_key=True)
+    image_url = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        "polymorphic_identity":"image_project",
+    }
+
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description':self.description,
+            'user_id':self.user_id,
+            'course_id': self.course_id,
+            'type':self.type,
+            'image_url':self.image_url
+        }
+
+
+class TextProject(Project):
+    """
+    Represents a project consisting mostly of text.
+    """
+    __tablename__ = "text project"
+    id = Column(Integer, ForeignKey("project.id"), primary_key=True)
+    content = Column(String, nullable=False)
+    content_type = Column(Enum("code", "word", "plaintext", name="type"))
+
+    __mapper_args__ = {
+        "polymorphic_identity":"text_project",
+    }
+
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'name':self.name,
+            'description':self.description,
+            'user_id':self.user_id,
+            'course_id':self.course_id,
+            'type':self.type,
+            'content':self.content,
+            'content_type':self.content_type
+        }
+
 class User(Base):
     """
     Represents a user in the database.
@@ -23,6 +103,7 @@ class User(Base):
     __tablename__ = "user"
     username = Column(String(85), nullable=False)
     password_hash = Column(String, nullable=False)
+    projects = relationship(Project, cascade="save-update, merge, delete")
     id = Column(Integer, primary_key=True)
 
     def make_hash(self, password):
@@ -52,23 +133,15 @@ class User(Base):
         user_id = data['id']
         return user_id
 
-
-class Project(Base):
+class Course(Base):
     """
-    Represents a basic project. Nothing fancy here.
+    Represents a grouping of projects, most likely for a class/course
     """
-    __tablename__ = "project"
+    __tablename__ = "course"
     name = Column(String, nullable=False)
     description = Column(String)
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User)
-    type = Column(String(50))
-
-    __mapper_args__ = {
-        "polymorphic_identity":"project",
-        "polymorphic_on":type
-    }
+    projects = relationship(Project, cascade='save-update, merge, delete')
 
     @property
     def serialize(self):
@@ -76,59 +149,8 @@ class Project(Base):
             'id':self.id,
             'name':self.name,
             'description':self.description,
-            'user_id':self.user_id,
-            'type':self.type
+            'projects': [i.serialize for i in self.projects]
         }
-
-class ImageProject(Project):
-    """
-    Represents a project that is primarily an image.
-    """
-    __tablename__ = "image project"
-    id = Column(Integer, ForeignKey("project.id"), primary_key=True)
-    image_url = Column(String, nullable=False)
-
-    __mapper_args__ = {
-        "polymorphic_identity":"image_project",
-    }
-
-    @property
-    def serialize(self):
-        return {
-            'id':self.id,
-            'name':self.name,
-            'description':self.description,
-            'user_id':self.user_id,
-            'type':self.type,
-            'image_url':self.image_url
-        }
-
-
-class TextProject(Project):
-    """
-    Represents a project consisting mostly of text.
-    """
-    __tablename__ = "text project"
-    id = Column(Integer, ForeignKey("project.id"), primary_key=True)
-    content = Column(String, nullable=False)
-    content_type = Column(Enum("code", "word", "plaintext", name="type"))
-
-    __mapper_args__ = {
-        "polymorphic_identity":"text_project",
-    }
-
-    @property
-    def serialize(self):
-        return {
-            'id':self.id,
-            'name':self.name,
-            'description':self.description,
-            'user_id':self.user_id,
-            'type':self.type,
-            'content':self.content,
-            'content_type':self.content_type
-        }
-
 
 engine = create_engine(app_config.db_uri)
 Base.metadata.create_all(engine)
