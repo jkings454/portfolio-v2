@@ -4,17 +4,18 @@
 const React = require('react');
 import {Link} from 'react-router';
 
+const NavItem = require("./NavItem");
+
 const Navbar = React.createClass({
     getInitialState: function() {
         return {
             pages: {
-                "Blog":"/blog",
-                "Projects":"/projects",
+                "Courses":"/courses",
+                "Projects":"/projects"
         }}
     },
     render: function () {
         let pages = this.state.pages;
-        let currentPage = this.props.currentPage;
         return (
             <nav className='navbar navbar-default navbar-static-top'>
                 <div className='container'>
@@ -30,12 +31,7 @@ const Navbar = React.createClass({
                     <div className='collapse navbar-collapse' id='my-collapse'>
                         <ul className='nav navbar-nav navbar-right'>
                             {Object.keys(pages).map(function(key) {
-                                if (key == currentPage) {
-                                    return (<li className="active" key={key}>
-                                        <Link to={pages[key]}>{key}</Link>
-                                    </li>)
-                                }
-                                return <li key={key}><Link to={pages[key]}>{key}</Link></li>;
+                                return <NavItem to={pages[key]}>{key}</NavItem>
                             })}
                         </ul>
                     </div>

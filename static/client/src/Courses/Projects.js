@@ -2,7 +2,6 @@
  * Created by josh on 12/29/16.
  */
 const React = require('react');
-const Navbar = require('./Navbar');
 
 const Projects = React.createClass({
     getInitialState: function() {
@@ -23,22 +22,21 @@ const Projects = React.createClass({
         let deleteProject = this.deleteProject;
 
         return (
-            <div>
-                <Navbar currentPage = "Projects"/>
-                <div className = "container">
-                    {this.state.projects.map(function(project){
-                        return (
-                            <div key = {project.id}>
-                                <h1>{project.name}</h1>
-                                <p>{project.description}</p>
-                                {
-                                    loggedIn &&
-                                    <a href = "#" onClick = {() => deleteProject(project.id)}>Delete project</a>
-                                }
-                            </div>);
-                    })}
+            <div className = "container">
+                {this.state.projects.map(function(project){
+                    return (
+                        <div key = {project.id}>
+                            <h1>{project.name}</h1>
+                            <p>{project.description}</p>
+                            {
+                                loggedIn &&
+                                <a href = "#" onClick = {() => deleteProject(project.id)}>
+                                    Delete project
+                                </a>
+                            }
+                        </div>);
+                })}
 
-                </div>
             </div>
         )
     },

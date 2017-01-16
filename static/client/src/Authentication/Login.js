@@ -3,7 +3,6 @@
  */
 const React = require("react");
 const Router = require("react-router");
-const Navbar = require("./Navbar");
 const TextInput = require("./TextInput");
 
 const Login = React.createClass({
@@ -21,43 +20,45 @@ const Login = React.createClass({
         ),
     render: function() {
                 return (
-                <div>
-                <Navbar />
-                    <div className="container">
-                    {
-                        !this.props.authenticated &&
-                            <div className="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
-                                {this.state.loginFailed ? this.errorMessage : ""}
-                                <div className="panel panel-default">
-                                    <div className="panel-heading">
-                                        <h3>Login</h3>
-                                    </div>
-                                    <div className="panel-body">
-                                        <form>
+                <div className="container">
+                {
+                    !this.props.authenticated &&
+                        <div className="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                            {this.state.loginFailed ? this.errorMessage : ""}
+                            <div className="panel panel-default">
+                                <div className="panel-heading">
+                                    <h3>Login</h3>
+                                </div>
+                                <div className="panel-body">
+                                    <form>
 
-                                            <TextInput placeholder="Username" type="text" className="input-lg"
-                                                       inputChangeFunction={this.handleNameChange}/>
+                                        <TextInput placeholder="Username" type="text" className="input-lg"
+                                                   inputChangeFunction={this.handleNameChange}/>
 
-                                            <TextInput placeholder="Password" type="password" className="input-lg"
-                                                       inputChangeFunction={this.handlePasswordChange}/>
+                                        <TextInput placeholder="Password" type="password" className="input-lg"
+                                                   inputChangeFunction={this.handlePasswordChange}/>
 
-                                            <button type="button" onClick={this.handleLogin}
-                                                    className="btn btn-primary btn-block btn-lg">Login
-                                            </button>
-                                        </form>
-                                    </div>
+                                        <button type="button" onClick={this.handleLogin}
+                                                className="btn btn-primary btn-block btn-lg">Login
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
+                        </div>
                     }
                     {
                         this.props.authenticated &&
                             <h1>You are already logged in.</h1>
                     }
-                     </div>
                 </div>
+
             );
     },
     handleNameChange: function(e) {
+        if (e.target.charCode == 13) {
+            this.handleLogin();
+            return;
+        }
         if (e.target.value == "") {
             return { "error" : "This field cannot be blank." }
         }
@@ -65,6 +66,10 @@ const Login = React.createClass({
         return {"success" : "the field is valid"}
     },
     handlePasswordChange: function(e) {
+        if (e.target.charCode == 13) {
+            this.handleLogin();
+            return;
+        }
         if (e.target.value == "") {
             return { "error" : "This field cannot be blank." }
         }

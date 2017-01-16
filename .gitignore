@@ -22,3 +22,4 @@ secrets.json
 *.pyc
 
 .idea
+static/images

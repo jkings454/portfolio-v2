@@ -2,6 +2,7 @@
 Helper class to store config variables.
 """
 import json
+import os
 
 class Config:
     """
@@ -24,3 +25,8 @@ class Config:
         fo.close()
 
         return Config(secrets["db_path"], True, "127.0.0.1", 3000)
+
+    @staticmethod
+    def production():
+        db_uri = os.environ["DATABASE_URL"]
+        return Config(db_uri, False, "0.0.0.0", 80)

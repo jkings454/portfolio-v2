@@ -51,9 +51,15 @@ def verify_password(username, password):
 @app.route("/")
 @app.route("/blog")
 @app.route("/projects")
+@app.route("/courses")
 @app.route("/login")
 def index():
     # Because we are using React Router, we only need one page for most views.
+    return render_template("index.html")
+
+@app.route("/courses/<int:course_id>")
+def get_course(course_id):
+    # React will take care of the logic here.
     return render_template("index.html")
 
 # COURSES
