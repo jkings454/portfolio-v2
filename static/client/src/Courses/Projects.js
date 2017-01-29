@@ -9,6 +9,7 @@ const Projects = React.createClass({
     },
     componentDidMount: function() {
         $.ajax({
+            cache: true,
             dataType: 'json',
             url: '/api/v1/projects',
             success: this.successCallback
@@ -41,12 +42,17 @@ const Projects = React.createClass({
         )
     },
     deleteProject: function(projectID) {
-        $.ajax({
-            method: "DELETE",
-            dataType: "json",
-            url: "/api/v1/projects/" + projectID,
-            success: this.deleteSuccess
-        })
+        if (confirm("Delete this project?")) {
+            $.ajax({
+                method: "DELETE",
+                dataType: "json",
+                url: "/api/v1/projects/" + projectID,
+                success: this.deleteSuccess,
+                headers: {
+                    authorization: "Bearer " + this.props.token,
+                }
+            })
+        }
     },
     deleteSuccess: function(data) {
         alert("\"" + data.name + "\" was successfully deleted!");

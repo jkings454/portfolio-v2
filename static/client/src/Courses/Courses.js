@@ -10,6 +10,7 @@ const Courses = React.createClass({
     },
     componentDidMount: function() {
         $.ajax({
+            cache: true,
             url: "/api/v1/courses",
             dataType: "json",
             success: this.onCourseSuccess,
@@ -22,7 +23,7 @@ const Courses = React.createClass({
                 {
                     courses.map(function (course) {
                         return (
-                            <div className = "course">
+                            <div className = "course" key={course.id}>
                                 <h1>{course.name}</h1>
                                 <p>{course.description}</p>
                                 <p><Link to={"/courses/" + course.id}>see more</Link></p>

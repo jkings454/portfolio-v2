@@ -5,13 +5,17 @@ from flask import Flask, render_template, jsonify, request, g
 from models import User, Project, ImageProject, TextProject, Base, Course
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from flask_httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPTokenAuth
 from flask_cors import CORS
 from config import Config
+from flask_cache import Cache
 
-auth = HTTPBasicAuth()
+TIMEOUT = 30
+
+auth = HTTPTokenAuth()
 app = Flask(__name__)
 
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 # Configures Cross origin resource sharing.
 # Anybody from any origin can access /api/ urls.
 CORS(app, resources={r'/api/*':{'origins':'*'}})
@@ -28,23 +32,19 @@ session = DBSession()
 
 
 # Login methods
-@auth.verify_password
-def verify_password(username, password):
+@auth.verify_token
+def verify_token(token):
     # First we check and see if the user provided us with a token or a username and password.
-    user_id = User.verify_auth_token(username)
-    if user_id:
-        # The user has provided us with a token.
-        user = session.query(User).filter_by(id=user_id).first()
+    print token
+    user_id = User.verify_auth_token(token)
+
+    user = session.query(User).filter_by(id=user_id).first()
+
+    if user:
+        g.user = user
+        return True
     else:
-        # The user has provided a username and password.
-        user = session.query(User).filter_by(username=username).first()
-        if not user or not user.check_hash(password):
-            # Tricksy hobbitses trying to log in without authorization.
-            return False
-
-    g.user = user
-    return True
-
+        return False
 
 # Public URLs
 # VIEWS
@@ -53,6 +53,7 @@ def verify_password(username, password):
 @app.route("/projects")
 @app.route("/courses")
 @app.route("/login")
+@cache.cached(timeout=TIMEOUT)
 def index():
     # Because we are using React Router, we only need one page for most views.
     return render_template("index.html")
@@ -65,8 +66,11 @@ def get_course(course_id):
 # COURSES
 @app.route("/api/v1/courses")
 def get_api_courses():
+
     # Should be fairly straightforward.
     courses = session.query(Course).all()
+    if request.args.get("truncated", type=str):
+        return jsonify(only_basic_info(courses))
     # Everything with an api url will return json.
     return jsonify([i.serialize for i in courses])
 
@@ -80,7 +84,10 @@ def get_api_course(id):
 @app.route("/api/v1/courses/<int:course_id>/projects")
 def get_api_course_projects(course_id):
     # Gets projects from a specific course.
+
     projects = session.query(Project).filter_by(course_id=course_id)
+    if request.args.get("truncated", type=str):
+        return only_basic_info(projects)
     return jsonify([i.serialize for i in projects])
 
 @app.route("/api/v1/projects/<int:project_id>")
@@ -98,12 +105,29 @@ def get_api_projects():
 # Protected URLs
 
 # User can request a "token" in to allow persistent yet stateless access to these URLs.
-@app.route("/token")
+@app.route("/token", methods=['GET'])
 @auth.login_required
 def get_token():
     token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode()})
+    return jsonify({'token': token.decode(), "expires_in": 600 })
 
+@app.route("/token", methods=['POST'])
+def post_token():
+    username = request.form.get("username", type=str)
+    password = request.form.get("password", type=str)
+    if not username or not password:
+        return "No credentials provided", 401
+    else:
+        user = session.query(User).filter_by(username=username).first()
+        if not user or not user.check_hash(password):
+            return "Not Authorized", 401
+        else:
+            g.user = user
+            print user.username
+            token = user.generate_auth_token()
+            print "User token: " + token
+            print "Does the token work? User according to token: " + str(User.verify_auth_token(token))
+            return jsonify({'token': token.decode(), "expires_in": 600})
 # COURSES
 @app.route("/api/v1/courses", methods = ["POST"])
 @auth.login_required
@@ -217,6 +241,11 @@ def post_api_project(course_id):
     else:
         # The user didn't read our glorious documentation and has provided an invalid type.
         return jsonify({"error creating project":"the type is invalid or missing."}), 400
+
+def only_basic_info(data):
+    data = [ i.serialize for i in data]
+
+    return [{"name": c["name"], "id": c["id"]} for c in data]
 
 if __name__ == "__main__":
     app.run(debug=app_config.debug, host=app_config.host, port=app_config.port)

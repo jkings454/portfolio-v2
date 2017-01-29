@@ -31,7 +31,7 @@ const Navbar = React.createClass({
                     <div className='collapse navbar-collapse' id='my-collapse'>
                         <ul className='nav navbar-nav navbar-right'>
                             {Object.keys(pages).map(function(key) {
-                                return <NavItem to={pages[key]}>{key}</NavItem>
+                                return <NavItem to={pages[key]} key={key}>{key}</NavItem>
                             })}
                         </ul>
                     </div>

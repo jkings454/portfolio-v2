@@ -133,6 +133,8 @@ class User(Base):
         user_id = data['id']
         return user_id
 
+
+
 class Course(Base):
     """
     Represents a grouping of projects, most likely for a class/course

@@ -14,19 +14,57 @@ import {Router, Route, Link, browserHistory, IndexRoute} from 'react-router'
 
 const App = React.createClass({
     getInitialState: function() {
-        return ({authenticated: localStorage.authenticated == "true", token: localStorage.token})
+        return ({authenticated: sessionStorage.authenticated == "true", token: sessionStorage.token})
     },
     componentDidMount: function() {
-        this.setState({authenticated: localStorage.authenticated == "true", token: localStorage.token})
+        if (Date.now() > parseInt(sessionStorage.tokenExpiresAt)) {
+            this.setState({authenticated: false, token: ""})
+        }
+        else if (sessionStorage.token) {
+            this.setState({authenticated: true, token: sessionStorage.token})
+        }
+        else {
+            this.setState({authenticated: false, token: ""})
+        }
+        setInterval(this.checkToken, 1000)
     },
-    onLogin: function(token) {
-        localStorage.authenticated = true;
-        localStorage.token = token;
+    checkToken: function () {
+        if (sessionStorage.authenticated == "true") {
+
+            if (Date.now() > (parseInt(sessionStorage.tokenExpiresAt))) {
+                this.onLogout();
+                $('.modal').modal('hide');
+                browserHistory.push("/login?tokenExpired=true")
+            }
+            else if (Date.now() > (parseInt(sessionStorage.tokenExpiresAt) - 10000)) {
+                this.getNewToken();
+            }
+        }
+    },
+    getNewToken: function() {
+        let onLogin = this.onLogin;
+        $.ajax({
+            url: "/token",
+            cache: false,
+            headers: {
+                authorization: "Bearer " + this.state.token,
+            },
+            success: function(data) {
+                onLogin(data.token, data.expires_in);
+            }
+        })
+    },
+    onLogin: function(token, expiration) {
+        sessionStorage.authenticated = true;
+        sessionStorage.token = token;
         this.setState({authenticated: true, token: token});
+        let d = new Date();
+        sessionStorage.tokenExpiresAt = d.getTime() + (1000*expiration)
     },
     onLogout: function() {
-        localStorage.authenticated = false;
-        localStorage.token = "";
+        sessionStorage.authenticated = false;
+        sessionStorage.token = "";
+        sessionStorage.tokenExpiresAt = 0;
         this.setState({authenticated: false, token: ""})
     },
     render: function() {
@@ -38,7 +76,11 @@ const App = React.createClass({
         return (
             <div className = "wrapper">
                 <Navbar/>
-                {this.state.authenticated && <Admin onLogout = {this.onLogout} />}
+                {this.state.authenticated &&
+                <Admin
+                    onLogout = {this.onLogout}
+                    token={this.state.token}
+                />}
                 {clonedChildren}
             </div>);
     }

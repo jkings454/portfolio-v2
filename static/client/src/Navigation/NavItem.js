@@ -6,7 +6,7 @@ import {Link} from "react-router";
 
 const NavItem = React.createClass({
     contextTypes: {
-        router: React.PropTypes.func.isRequired,
+        router: React.PropTypes.object.isRequired,
     },
     render: function() {
         var to = this.props.to;

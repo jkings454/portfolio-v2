@@ -13,9 +13,11 @@ const TextInput = React.createClass({
     render: function() {
         return (
             <div className = {"form-group" + (this.state.error ? " has-error" : "")}>
+                {this.props.children}
                 <input type = {this.props.type} className = {"form-control " + this.props.className}
                        onChange = {this.handleChange}
-                    placeholder = {this.props.placeholder}/>
+                       name={this.props.name}
+                       placeholder = {this.props.placeholder}/>
                 <span className = "help-block">{this.state.errorMessage}</span>
             </div>
 
