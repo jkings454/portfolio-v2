@@ -11,7 +11,7 @@ import random, string
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
 Base = declarative_base()
-app_config = Config.development()
+app_config = Config.production()
 secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
 
 
