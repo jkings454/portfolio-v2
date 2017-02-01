@@ -37,10 +37,7 @@ Some resources also allow for certain parameters, specifically those which respo
 
 | Parameter | Expected value| Description |
 |-----------|---------------|-------------|
-|`limit`    |integer        |Upper limit of a query. `/api/v1/courses?limit=5` 
-                              will only return the first five courses.|
-|`offset`   |integer        |Lower limit of a query. `/api/v1/courses?offset=5` 
-                             will only return courses after the fifth. Can be combined with limit.|
-|`truncated`|boolean        |Returns a shortened version of the query, 
-                             containing only the `name` and `id` of each item.|
+|`limit`    |integer        |Upper limit of a query. `/api/v1/courses?limit=5` will only return the first five courses.|
+|`offset`   |integer        |Lower limit of a query. `/api/v1/courses?offset=5` will only return courses after the fifth. Can be combined with limit.|
+|`truncated`|boolean        |Returns a shortened version of the query, containing only the `name` and `id` of each item.|
 
