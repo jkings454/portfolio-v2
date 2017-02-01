@@ -66,10 +66,18 @@ def get_course(course_id):
 # COURSES
 @app.route("/api/v1/courses")
 def get_api_courses():
+    offset = request.args.get("offset", type=int)
+    limit = request.args.get("limit", type=int)
+    if offset and not limit:
+        courses = session.query(Course).offset(offset).all()
+    elif limit and not offset:
+        courses = session.query(Course).limit(limit).all()
+    elif limit and offset:
+        courses = session.query(Course).offset(offset).limit(limit).all()
+    else:
+        courses = session.query(Course).all()
 
-    # Should be fairly straightforward.
-    courses = session.query(Course).all()
-    if request.args.get("truncated", type=str):
+    if request.args.get("truncated", type=bool):
         return jsonify(only_basic_info(courses))
     # Everything with an api url will return json.
     return jsonify([i.serialize for i in courses])
@@ -84,10 +92,19 @@ def get_api_course(id):
 @app.route("/api/v1/courses/<int:course_id>/projects")
 def get_api_course_projects(course_id):
     # Gets projects from a specific course.
-
-    projects = session.query(Project).filter_by(course_id=course_id)
-    if request.args.get("truncated", type=str):
+    limit = request.args.get("limit", type=int)
+    offset = request.args.get("offset", type=int)
+    if limit and not offset:
+        projects = session.query(Project).limit(limit).filter_by(course_id=course_id).all()
+    elif offset and not limit:
+        projects = session.query(Project).offset(offset).filter_by(course_id=course_id).all()
+    elif offset and limit:
+        projects = session.query(Project).offset(offset).limit(limit).filter_by(course_id=course_id).all()
+    else:
+        projects = session.query(Project).filter_by(course_id=course_id).all()
+    if request.args.get("truncated", type=bool):
         return only_basic_info(projects)
+
     return jsonify([i.serialize for i in projects])
 
 @app.route("/api/v1/projects/<int:project_id>")
@@ -98,8 +115,24 @@ def get_api_project(project_id):
 
 @app.route("/api/v1/projects")
 def get_api_projects():
-    # Returns all projects regardless of course.
-    projects = session.query(Project).all()
+    # How many projects does the user want?
+    limit = request.args.get("limit", type=int)
+    offset = request.args.get("offset", type=int)
+    if offset and not limit:
+        # The user wants all the projects after the offset.
+        projects = session.query(Project).offset(offset).all()
+    elif limit and not offset:
+        # The user wants all the projects up to the offset.
+        projects = session.query(Project).limit(limit).all()
+    elif limit and offset:
+        # The user wants all of the projects between the limit and the offset.
+        projects = session.query(Project).limit(limit).offset(offset).all()
+    else:
+        projects = session.query(Project).all()
+
+    if request.args.get("truncated", type=bool):
+        return only_basic_info(projects)
+
     return jsonify([i.serialize for i in projects])
 
 # Protected URLs
@@ -111,6 +144,9 @@ def get_token():
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode(), "expires_in": 600 })
 
+# This route is different. Instead of accepting a token, it accepts a username and password.
+# If the username and password is valid, the server will exchange it for an access token,
+# which can be used to perform POST, PATCH, and DELETE requests.
 @app.route("/token", methods=['POST'])
 def post_token():
     username = request.form.get("username", type=str)

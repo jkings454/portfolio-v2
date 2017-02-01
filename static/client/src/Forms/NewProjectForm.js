@@ -31,11 +31,14 @@ const NewProjectForm = React.createClass({
             return (<form onSubmit={this.props.onSubmit}>
                     <div className="form-group">
                         <label>Course</label>
-                        <select name="courseId" className="form-control">
+                        <select
+                            name="courseId" className="form-control"
+                            onChange={this.props.handleChange}
+                        >
                             {
                                 courses.map(function (course) {
                                     // Keep in mind, these are truncated courses.
-                                    return <option value={course.id}>{course.name}</option>
+                                    return <option key={course.id} value={course.id}>{course.name}</option>
                                 })
                             }
                         </select>
@@ -52,13 +55,53 @@ const NewProjectForm = React.createClass({
                         <textarea name="description"
                                   onChange={this.props.handleChange}
                                   className="form-control"
-                                  rows="10"
+                                  rows="5"
                         />
                     </div>
+                    <div className="form-group">
+                        <select
+                            name="projectType" className="form-control"
+                            onChange = {this.handleProjectTypeChange}
+                        >
+                            <option value="project">Basic Project</option>
+                            <option value="image_project">Image Project</option>
+                            <option value="text_project">Text Project</option>
+                        </select>
+                    </div>
+                    {
+                        (this.state.projectType == "image_project") && (
+                            <div className="form-group">
+                                <TextInput
+                                    name="imageUrl"
+                                    inputChangeFunction={this.props.handleChange}
+                                    className="form-control">
+                                    <label>Image URL</label>
+                                </TextInput>
+                            </div>
+                        )
+                    }
+                    {
+                        (this.state.projectType == "text_project") && (
+                            <div className="form-group">
+                                <textarea
+                                    name="content"
+                                    onChange={this.props.handleChange}
+                                    className="form-control"
+                                    rows="6"
+                                />
+                            </div>
+                        )
+                    }
+
                 </form>
             );
         }
 
+    },
+    handleProjectTypeChange: function(e) {
+
+        this.setState({projectType: e.target.value});
+        this.props.handleChange(e);
     }
 });
 

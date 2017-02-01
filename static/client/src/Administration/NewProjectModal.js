@@ -25,7 +25,8 @@ const NewProjectModal = React.createClass({
                 data.image_url = this.state.imageUrl;
                 break;
             case "text_project":
-                data.content_type = this.state.contentType;
+                // TODO: offer multiple types of text project.
+                data.content_type = "plaintext";
                 data.content = this.state.textContent;
                 break;
             default:
@@ -47,7 +48,7 @@ const NewProjectModal = React.createClass({
     render: function () {
         return (
             <div className="modal fade" id="newProjectModal" tabIndex="-1" role="dialog">
-                <div className="modal-dialog modal-lg" role="document">
+                <div className="modal-dialog" role="document">
                     <div className="modal-content">
                         <div className="modal-header">
                             <button type="button" className="close" data-dismiss="modal">

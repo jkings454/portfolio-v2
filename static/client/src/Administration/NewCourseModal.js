@@ -11,7 +11,7 @@ const NewCourseModal = React.createClass({
     render: function() {
         return (
             <div className = "modal fade" id="newCourseModal" tabIndex="-1" role="dialog">
-                <div className = "modal-dialog modal-lg" role="document">
+                <div className = "modal-dialog" role="document">
                     <div className = "modal-content">
                         <div className = "modal-header">
                             <button type="button" className="close" data-dismiss="modal">
