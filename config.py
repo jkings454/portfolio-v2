@@ -28,5 +28,5 @@ class Config:
 
     @staticmethod
     def production():
-        db_uri = os.environ["DATABASE_URL"]
-        return Config(db_uri, False, "0.0.0.0", 80)
+        database_url = os.environ["DATABASE_URL"]
+        return Config(database_url, False, "0.0.0.0", 80)

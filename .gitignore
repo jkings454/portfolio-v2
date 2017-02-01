@@ -7,8 +7,6 @@ Visual\ Studio
 
 static/client/build
 
-node_modules
-
 .babelrc
 
 webpack.config.js
@@ -22,4 +20,6 @@ secrets.json
 *.pyc
 
 .idea
-static/images
+/Readme.md
+!/static/client/build/
+/static/client/src/
