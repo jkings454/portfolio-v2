@@ -7,12 +7,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import create_engine
 from passlib.apps import custom_app_context as pwd_context
 from config import Config
-import os
+import random, string
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
 Base = declarative_base()
-app_config = Config.production()
-secret_key = os.environ["SECRET_KEY"]
+app_config = Config.development()
+secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
 
 
 class Project(Base):
@@ -126,10 +126,8 @@ class User(Base):
         try:
             data = s.loads(token)
         except SignatureExpired:
-            print "Signature expired."
             return None
         except BadSignature:
-            print "Bad signature."
             return None
 
         user_id = data['id']
