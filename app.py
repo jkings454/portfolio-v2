@@ -33,15 +33,16 @@ session = DBSession()
 @auth.verify_token
 def verify_token(token):
     # First we check and see if the user provided us with a token or a username and password.
-    print token
     user_id = User.verify_auth_token(token)
-
+    print user_id
     user = session.query(User).filter_by(id=user_id).first()
-
+    print str(user)
     if user:
         g.user = user
+        print "User " + user.username + " has connected."
         return True
     else:
+        print "Bearer " + token + " failed to connect."
         return False
 
 # Public URLs
