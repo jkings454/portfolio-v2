@@ -8,14 +8,12 @@ from sqlalchemy import create_engine, or_
 from flask_httpauth import HTTPTokenAuth
 from flask_cors import CORS
 from config import Config
-from flask_cache import Cache
 
 TIMEOUT = 30
 
 auth = HTTPTokenAuth()
 app = Flask(__name__)
 
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 # Configures Cross origin resource sharing.
 # Anybody from any origin can access /api/ urls.
 CORS(app, resources={r'/api/*':{'origins':'*'}})
@@ -53,7 +51,6 @@ def verify_token(token):
 @app.route("/projects")
 @app.route("/courses")
 @app.route("/login")
-@cache.cached(timeout=TIMEOUT)
 def index():
     # Because we are using React Router, we only need one page for most views.
     return render_template("index.html")
