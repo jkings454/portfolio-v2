@@ -21,5 +21,6 @@ secrets.json
 
 .idea
 /Readme.md
-!/static/client/build/
-/static/client/src/
+
+!/static/client/src/
+!/Readme.md
