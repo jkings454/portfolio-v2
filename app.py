@@ -4,7 +4,7 @@ This is the entry point of the application.
 from flask import Flask, render_template, jsonify, request, g
 from models import User, Project, ImageProject, TextProject, Base, Course
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 from flask_httpauth import HTTPTokenAuth
 from flask_cors import CORS
 from config import Config
@@ -68,15 +68,19 @@ def get_course(course_id):
 def get_api_courses():
     offset = request.args.get("offset", type=int)
     limit = request.args.get("limit", type=int)
-    if offset and not limit:
-        courses = session.query(Course).offset(offset).all()
-    elif limit and not offset:
-        courses = session.query(Course).limit(limit).all()
-    elif limit and offset:
-        courses = session.query(Course).offset(offset).limit(limit).all()
-    else:
-        courses = session.query(Course).all()
+    search = request.args.get("search", type=str)
 
+    query = session.query(Course)
+
+    if search:
+        query = query.filter(or_(Course.name.contains(search), Course.description.contains(search)))
+
+    if offset:
+        query = query.offset(offset)
+    if limit:
+        query = query.limit(limit)
+
+    courses = query.all()
     if request.args.get("truncated", type=bool):
         return jsonify(only_basic_info(courses))
     # Everything with an api url will return json.
@@ -94,14 +98,18 @@ def get_api_course_projects(course_id):
     # Gets projects from a specific course.
     limit = request.args.get("limit", type=int)
     offset = request.args.get("offset", type=int)
-    if limit and not offset:
-        projects = session.query(Project).limit(limit).filter_by(course_id=course_id).all()
-    elif offset and not limit:
-        projects = session.query(Project).offset(offset).filter_by(course_id=course_id).all()
-    elif offset and limit:
-        projects = session.query(Project).offset(offset).limit(limit).filter_by(course_id=course_id).all()
-    else:
-        projects = session.query(Project).filter_by(course_id=course_id).all()
+    search = request.args.get("search", type=str)
+    query = session.query(Project).filter_by(course_id=course_id)
+
+    if search:
+        query = query.filter(or_(Project.description.contains(search), Project.name.contains(search)))
+
+    if limit:
+        query = query.limit(limit)
+    if offset:
+        query = query.offset(offset)
+
+    projects = query.all()
     if request.args.get("truncated", type=bool):
         return only_basic_info(projects)
 
@@ -118,17 +126,19 @@ def get_api_projects():
     # How many projects does the user want?
     limit = request.args.get("limit", type=int)
     offset = request.args.get("offset", type=int)
-    if offset and not limit:
-        # The user wants all the projects after the offset.
-        projects = session.query(Project).offset(offset).all()
-    elif limit and not offset:
-        # The user wants all the projects up to the offset.
-        projects = session.query(Project).limit(limit).all()
-    elif limit and offset:
-        # The user wants all of the projects between the limit and the offset.
-        projects = session.query(Project).limit(limit).offset(offset).all()
-    else:
-        projects = session.query(Project).all()
+    search = request.args.get("search", type=str)
+
+    query = session.query(Project)
+    if search:
+        for prop in search.split(" "):
+            query = query.filter(or_(Project.description.ilike("%"+prop+"%"), Project.name.ilike("%"+prop+"%")))
+
+    if limit:
+        query = query.limit(limit)
+    if offset:
+        query = query.offset(offset)
+
+    projects = query.all()
 
     if request.args.get("truncated", type=bool):
         return only_basic_info(projects)
@@ -277,6 +287,12 @@ def post_api_project(course_id):
     else:
         # The user didn't read our glorious documentation and has provided an invalid type.
         return jsonify({"error creating project":"the type is invalid or missing."}), 400
+
+@app.route("/sign_s3")
+@auth.login_required
+def sign_s3():
+    #TODO: create method to allow users to upload images and documents to s3
+    pass
 
 def only_basic_info(data):
     data = [ i.serialize for i in data]

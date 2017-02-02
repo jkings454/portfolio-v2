@@ -1,5 +1,7 @@
 /**
  * Created by josh on 12/29/16.
+ *
+ * TODO: implement a search bar
  */
 const React = require('react');
 

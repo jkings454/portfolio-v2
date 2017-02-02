@@ -1,5 +1,7 @@
 /**
  * Created by josh on 1/12/17.
+ *
+ * TODO: implement a search bar.
  */
 const React = require("react");
 import {Link} from 'react-router';
