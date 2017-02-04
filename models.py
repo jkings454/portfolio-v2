@@ -19,7 +19,7 @@ class Project(Base):
     """
     Represents a basic project. Nothing fancy here.
     """
-    __tablename__ = "prodevelopmentject"
+    __tablename__ = "project"
     name = Column(String, nullable=False)
     description = Column(String)
     id = Column(Integer, primary_key=True)
