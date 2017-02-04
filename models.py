@@ -7,12 +7,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import create_engine
 from passlib.apps import custom_app_context as pwd_context
 from config import Config
-import random, string
+import os
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
 Base = declarative_base()
 app_config = Config.production()
-secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+secret_key = os.environ["SECRET_KEY"]
 
 
 class Project(Base):
