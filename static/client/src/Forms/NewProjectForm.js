@@ -24,7 +24,7 @@ const NewProjectForm = React.createClass({
     },
     render: function() {
         let courses = this.state.courses;
-        if (!courses) {
+        if (!courses || courses.length == 0) {
             return <h4 className="text-danger">There are no courses to add a project to.</h4>;
         }
         else {
@@ -71,12 +71,8 @@ const NewProjectForm = React.createClass({
                     {
                         (this.state.projectType == "image_project") && (
                             <div className="form-group">
-                                <TextInput
-                                    name="imageUrl"
-                                    inputChangeFunction={this.props.handleChange}
-                                    className="form-control">
-                                    <label>Image URL</label>
-                                </TextInput>
+                                <label>Upload Image</label>
+                                <input type="file" onChange={this.fileChange} accept="image/*"/>
                             </div>
                         )
                     }
@@ -102,7 +98,57 @@ const NewProjectForm = React.createClass({
 
         this.setState({projectType: e.target.value});
         this.props.handleChange(e);
+    },
+
+    fileChange: function(e) {
+        let files = e.target.files;
+        let file = files[0];
+        if (!file) {
+            return;
+        }
+        this.getSignedRequest(file);
+    },
+    uploadFile(file, data, url) {
+            console.log(data);
+            let form_data = new FormData();
+            for (var key in data.fields) {
+                form_data.append(key, data.fields[key])
+            }
+            form_data.append('file', file);
+
+            $.ajax({
+                method: "POST",
+                url: data.url,
+                data: form_data,
+                processData: false,
+                contentType: false,
+                success: (data) => (this.imageSuccess((url)))
+            });
+            this.setState({imageUrl: url})
+    },
+    getSignedRequest: function(file) {
+        let uploadFile = this.uploadFile;
+        $.ajax({
+            url: "/sign_s3",
+            data: {
+                file_name: file.name,
+                file_type: file.type
+            },
+            headers: {
+                authorization: "Bearer " + this.props.token
+            },
+            contentType: "json",
+            // success: (data) => (this.uploadFile(file, data.s3_data, data.url))
+            success: function(data) {
+                uploadFile(file, data.s3_data, data.url)
+            }
+        })
+    },
+    imageSuccess: function(url) {
+        this.props.getImageFile(url)
     }
+
+
 });
 
 module.exports = NewProjectForm;

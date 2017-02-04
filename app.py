@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, or_
 from flask_httpauth import HTTPTokenAuth
 from flask_cors import CORS
 from config import Config
+import boto3
 
 TIMEOUT = 30
 
@@ -289,8 +290,29 @@ def post_api_project(course_id):
 @app.route("/sign_s3")
 @auth.login_required
 def sign_s3():
-    #TODO: create method to allow users to upload images and documents to s3
-    pass
+    bucket = app_config.bucket
+
+    file_name = request.args.get("file_name", type=str)
+    file_type = request.args.get("file_type", type=str)
+
+    s3 = boto3.client("s3",
+                      aws_access_key_id=app_config.aws_id,
+                      aws_secret_access_key=app_config.aws_secret)
+
+    presigned_post = s3.generate_presigned_post(
+        Bucket=bucket,
+        Key=file_name,
+        Fields={"acl": "public-read", "Content-Type": file_type},
+        Conditions=[
+            {"acl":"public-read"},
+            {"Content-Type": file_type}
+        ],
+        ExpiresIn=3600
+    )
+    return jsonify({
+            "s3_data": presigned_post,
+            "url": "https://%s.s3.amazonaws.com/%s" % (bucket, file_name)
+        })
 
 def only_basic_info(data):
     data = [ i.serialize for i in data]

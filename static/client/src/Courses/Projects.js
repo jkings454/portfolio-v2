@@ -30,6 +30,10 @@ const Projects = React.createClass({
                     return (
                         <div key = {project.id}>
                             <h1>{project.name}</h1>
+                            {
+                                project.type=="image_project" &&
+                                    <img src={project.image_url}/>
+                            }
                             <p>{project.description}</p>
                             {
                                 loggedIn &&

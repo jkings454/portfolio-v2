@@ -126,8 +126,10 @@ class User(Base):
         try:
             data = s.loads(token)
         except SignatureExpired:
+            print "Signature Expired"
             return None
         except BadSignature:
+            print "Bad Signature"
             return None
 
         user_id = data['id']

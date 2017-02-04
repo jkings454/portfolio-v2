@@ -24,6 +24,7 @@ const NewCourseModal = React.createClass({
                             <NewCourseForm
                                 onSubmit = {this.handleSubmit}
                                 handleChange = {this.handleChange}
+
                             />
                         </div>
                         <div className = "modal-footer">

@@ -8,11 +8,16 @@ const NewProjectModal = React.createClass({
     contextTypes: {
         router: React.PropTypes.object.isRequired,
     },
-    getInitialState: function() {
+    getInitialState: function () {
         return {projectType: "project"}
     },
     handleSubmit: function (e) {
         let url = "/api/v1/courses/" + this.state.courseId + "/projects";
+        if (!this.state.name) {
+            //TODO: fancy things when this fails.
+            alert("Name cannot be blank");
+            return;
+        }
         let data = {
             name: this.state.name,
             description: this.state.description,
@@ -22,12 +27,21 @@ const NewProjectModal = React.createClass({
             case "project":
                 break;
             case "image_project":
+                if (!this.state.imageUrl) {
+                    alert("You must select an image, or the image upload has failed.");
+                    return;
+                }
                 data.image_url = this.state.imageUrl;
                 break;
             case "text_project":
                 // TODO: offer multiple types of text project.
+                if (!this.state.content) {
+                    alert("MUST provide text content.");
+                    return;
+                }
                 data.content_type = "plaintext";
-                data.content = this.state.textContent;
+                data.content = this.state.content;
+
                 break;
             default:
                 console.error("Bad content type reported.");
@@ -59,14 +73,16 @@ const NewProjectModal = React.createClass({
                         <div className="modal-body">
                             <h3>Create a new project.</h3>
                             <NewProjectForm
-                                onSubmit = {this.handleSubmit}
-                                handleChange = {this.handleChange}
-                                hindsight = {this.setInitialCourse}
+                                onSubmit={this.handleSubmit}
+                                handleChange={this.handleChange}
+                                hindsight={this.setInitialCourse}
+                                getImageFile={this.getImageFile}
+                                token={this.props.token}
                             />
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="submit" className="btn btn-default"
+                            <button type="submit" className="btn btn-primary"
                                     onClick={this.handleSubmit}>
                                 Submit
                             </button>
@@ -76,19 +92,23 @@ const NewProjectModal = React.createClass({
             </div>
         )
     },
-    handleChange: function(e) {
+    handleChange: function (e) {
         const value = e.target.value;
         const name = e.target.name;
         this.setState({[name]: value});
         return {};
     },
-    setInitialCourse: function(courseId){
+    setInitialCourse: function (courseId) {
         this.setState({courseId: courseId});
     },
-    ajaxSuccess: function(data) {
+    ajaxSuccess: function (data) {
         $('.modal').modal('hide');
         this.context.router.push("/projects");
-    }
+    },
+    getImageFile: function (url) {
+        this.setState({imageUrl: url})
+    },
+
 });
 
 module.exports = NewProjectModal;
