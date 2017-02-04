@@ -11,7 +11,7 @@ import random, string
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
 Base = declarative_base()
-app_config = Config.development()
+app_config = Config.production()
 secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
 
 
@@ -19,7 +19,7 @@ class Project(Base):
     """
     Represents a basic project. Nothing fancy here.
     """
-    __tablename__ = "project"
+    __tablename__ = "prodevelopmentject"
     name = Column(String, nullable=False)
     description = Column(String)
     id = Column(Integer, primary_key=True)

@@ -21,7 +21,7 @@ CORS(app, resources={r'/api/*':{'origins':'*'}})
 
 # app_config holds information about databases and other things.
 # Yeah, I could just use the provided config thing, but whatever.
-app_config = Config.development()
+app_config = Config.production()
 
 # Code for setting up the database session.
 engine = create_engine(app_config.db_uri)

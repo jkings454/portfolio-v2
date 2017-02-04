@@ -5,7 +5,7 @@ node_modules
 .vscode
 Visual\ Studio
 
-static/client/build
+/static/client/src
 
 .babelrc
 
