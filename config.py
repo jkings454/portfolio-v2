@@ -35,4 +35,5 @@ class Config:
         database_url = os.environ["DATABASE_URL"]
         aws_id = os.environ["AWS_ACCESS_ID"]
         aws_secret = os.environ["AWS_SECRET_KEY"]
-        return Config(database_url, False, "0.0.0.0", 80, aws_id, aws_secret)
+        aws_bucket = os.environ["AWS_BUCKET_NAME"]
+        return Config(database_url, False, "0.0.0.0", 80, aws_id, aws_secret, aws_bucket)
