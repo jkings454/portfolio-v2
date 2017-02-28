@@ -95,8 +95,9 @@ ReactDOM.render(
             <Route path = "projects" component = {Projects}>
                 <Route path=":id" component = {Project}/>
             </Route>
-            <Route path="courses" component = {Courses} />
-            <Route path="courses/:id" component = {Course}/>
+            <Route path="courses" component = {Courses}>
+                <Route path=":id" component = {Course}/>
+            </Route>
         </Route>
     </Router>,
     document.getElementById('app'));

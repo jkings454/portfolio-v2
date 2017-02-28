@@ -75,7 +75,7 @@ class TextProject(Project):
     __tablename__ = "text project"
     id = Column(Integer, ForeignKey("project.id"), primary_key=True)
     content = Column(String, nullable=False)
-    content_type = Column(Enum("code", "word", "plaintext", name="type"))
+    content_type = Column(Enum("code", "markdown", "plaintext", "document", name="type"))
 
     __mapper_args__ = {
         "polymorphic_identity":"text_project",

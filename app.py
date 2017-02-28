@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 # Configures Cross origin resource sharing.
 # Anybody from any origin can access /api/ urls.
-CORS(app, resources={r'/api/*':{'origins':'*'}})
+CORS(app, resources={r'/api/*': {'origins': '*'}})
 
 # app_config holds information about databases and other things.
 # Yeah, I could just use the provided config thing, but whatever.
@@ -46,6 +46,7 @@ def verify_token(token):
         print "Bearer " + token + " failed to connect."
         return False
 
+
 # Public URLs
 # VIEWS
 @app.route("/")
@@ -57,10 +58,12 @@ def index():
     # Because we are using React Router, we only need one page for most views.
     return render_template("index.html")
 
+
 @app.route("/courses/<int:course_id>")
 def get_course(course_id):
     # React will take care of the logic here.
     return render_template("index.html")
+
 
 # COURSES
 @app.route("/api/v1/courses")
@@ -85,11 +88,13 @@ def get_api_courses():
     # Everything with an api url will return json.
     return jsonify([i.serialize for i in courses])
 
+
 @app.route("/api/v1/courses/<int:id>")
 def get_api_course(id):
     # Similar to the first method, however only one course is requested.
     course = session.query(Course).filter_by(id=id).first()
     return jsonify(course.serialize)
+
 
 # PROJECTS
 @app.route("/api/v1/courses/<int:course_id>/projects")
@@ -110,15 +115,17 @@ def get_api_course_projects(course_id):
 
     projects = query.all()
     if request.args.get("truncated", type=bool):
-        return only_basic_info(projects)
+        return jsonify(only_basic_info(projects))
 
     return jsonify([i.serialize for i in projects])
+
 
 @app.route("/api/v1/projects/<int:project_id>")
 def get_api_project(project_id):
     # Gets a specific project. Doesn't care about courses.
     project = session.query(Project).filter_by(id=project_id).first()
     return jsonify(project.serialize)
+
 
 @app.route("/api/v1/projects")
 def get_api_projects():
@@ -130,7 +137,7 @@ def get_api_projects():
     query = session.query(Project)
     if search:
         for prop in search.split(" "):
-            query = query.filter(or_(Project.description.ilike("%"+prop+"%"), Project.name.ilike("%"+prop+"%")))
+            query = query.filter(or_(Project.description.ilike("%" + prop + "%"), Project.name.ilike("%" + prop + "%")))
 
     if limit:
         query = query.limit(limit)
@@ -144,6 +151,7 @@ def get_api_projects():
 
     return jsonify([i.serialize for i in projects])
 
+
 # Protected URLs
 
 # User can request a "token" in to allow persistent yet stateless access to these URLs.
@@ -151,7 +159,8 @@ def get_api_projects():
 @auth.login_required
 def get_token():
     token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode(), "expires_in": 600 })
+    return jsonify({'token': token.decode(), "expires_in": 600})
+
 
 # This route is different. Instead of accepting a token, it accepts a username and password.
 # If the username and password is valid, the server will exchange it for an access token,
@@ -173,8 +182,10 @@ def post_token():
             print "User token: " + token
             print "Does the token work? User according to token: " + str(User.verify_auth_token(token))
             return jsonify({'token': token.decode(), "expires_in": 600})
+
+
 # COURSES
-@app.route("/api/v1/courses", methods = ["POST"])
+@app.route("/api/v1/courses", methods=["POST"])
 @auth.login_required
 def post_api_course():
     # User has made a post request, indicating that they would like to add a course.
@@ -188,7 +199,8 @@ def post_api_course():
     # Now we return the course so that our user knows their request was successful.
     return jsonify(new_course.serialize)
 
-@app.route("/api/v1/courses/<int:id>", methods = ["PATCH", "DELETE"])
+
+@app.route("/api/v1/courses/<int:id>", methods=["PATCH", "DELETE"])
 @auth.login_required
 def patch_delete_api_course(id):
     # There are two valid methods for this, PATCH and DELETE
@@ -206,6 +218,7 @@ def patch_delete_api_course(id):
         session.delete(course)
         session.commit()
         return jsonify(course.serialize)
+
 
 # PROJECTS
 @app.route("/api/v1/projects/<int:project_id>", methods=["PATCH", "DELETE"])
@@ -250,6 +263,7 @@ def patch_delete_api_project(project_id):
         session.commit()
         return jsonify(project.serialize)
 
+
 @app.route("/api/v1/courses/<int:course_id>/projects", methods=["POST"])
 @auth.login_required
 def post_api_project(course_id):
@@ -285,7 +299,8 @@ def post_api_project(course_id):
         return jsonify(new_project.serialize)
     else:
         # The user didn't read our glorious documentation and has provided an invalid type.
-        return jsonify({"error creating project":"the type is invalid or missing."}), 400
+        return jsonify({"error creating project": "the type is invalid or missing."}), 400
+
 
 @app.route("/sign_s3")
 @auth.login_required
@@ -304,20 +319,22 @@ def sign_s3():
         Key=file_name,
         Fields={"acl": "public-read", "Content-Type": file_type},
         Conditions=[
-            {"acl":"public-read"},
+            {"acl": "public-read"},
             {"Content-Type": file_type}
         ],
         ExpiresIn=3600
     )
     return jsonify({
-            "s3_data": presigned_post,
-            "url": "https://%s.s3.amazonaws.com/%s" % (bucket, file_name)
-        })
+        "s3_data": presigned_post,
+        "url": "https://%s.s3.amazonaws.com/%s" % (bucket, file_name)
+    })
+
 
 def only_basic_info(data):
-    data = [ i.serialize for i in data]
+    data = [i.serialize for i in data]
 
     return [{"name": c["name"], "id": c["id"]} for c in data]
+
 
 if __name__ == "__main__":
     app.run(debug=app_config.debug, host=app_config.host, port=app_config.port)

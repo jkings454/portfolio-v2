@@ -3,6 +3,8 @@
  */
 const React = require('react');
 const NewProjectForm = require("../Forms/NewProjectForm");
+const showdown = require('showdown');
+const converter = new showdown.Converter();
 
 const NewProjectModal = React.createClass({
     contextTypes: {
@@ -39,7 +41,7 @@ const NewProjectModal = React.createClass({
                     alert("MUST provide text content.");
                     return;
                 }
-                data.content_type = "plaintext";
+                data.content_type = this.state.contentType;
                 data.content = this.state.content;
 
                 break;
@@ -93,8 +95,11 @@ const NewProjectModal = React.createClass({
         )
     },
     handleChange: function (e) {
-        const value = e.target.value;
-        const name = e.target.name;
+        let value = e.target.value;
+        let name = e.target.name;
+        if (name=="content" && this.state.contentType == "markdown") {
+            value = converter.makeHtml(value);
+        }
         this.setState({[name]: value});
         return {};
     },

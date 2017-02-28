@@ -3,6 +3,8 @@
  */
 const React = require('react');
 const TextInput = require('./TextInput');
+const showdown = require('showdown');
+const converter = new showdown.Converter();
 
 const NewProjectForm = React.createClass({
     getInitialState: function() {
@@ -61,7 +63,7 @@ const NewProjectForm = React.createClass({
                     <div className="form-group">
                         <select
                             name="projectType" className="form-control"
-                            onChange = {this.handleProjectTypeChange}
+                            onChange = {this.handleChange}
                         >
                             <option value="project">Basic Project</option>
                             <option value="image_project">Image Project</option>
@@ -78,14 +80,19 @@ const NewProjectForm = React.createClass({
                     }
                     {
                         (this.state.projectType == "text_project") && (
-                            <div className="form-group">
-                                <textarea
-                                    name="content"
-                                    onChange={this.props.handleChange}
-                                    className="form-control"
-                                    rows="6"
-                                />
+                            <div>
+                                <div className="form-group">
+                                    <label>Content Type</label>
+                                    <select name="contentType" className="form-control" onChange={this.handleChange}>
+                                        <option value="default">--Select One--</option>
+                                        <option value="plaintext">Text</option>
+                                        <option value="markdown">Markdown</option>
+                                        <option value="document">Document</option>
+                                    </select>
+                                </div>
+                                {this.renderTextProjectForm()}
                             </div>
+
                         )
                     }
 
@@ -94,9 +101,8 @@ const NewProjectForm = React.createClass({
         }
 
     },
-    handleProjectTypeChange: function(e) {
-
-        this.setState({projectType: e.target.value});
+    handleChange: function(e) {
+        this.setState({[e.target.name]: e.target.value});
         this.props.handleChange(e);
     },
 
@@ -124,7 +130,6 @@ const NewProjectForm = React.createClass({
                 contentType: false,
                 success: (data) => (this.imageSuccess((url)))
             });
-            this.setState({imageUrl: url})
     },
     getSignedRequest: function(file) {
         let uploadFile = this.uploadFile;
@@ -146,6 +151,31 @@ const NewProjectForm = React.createClass({
     },
     imageSuccess: function(url) {
         this.props.getImageFile(url)
+    },
+    renderTextProjectForm: function() {
+        switch (this.state.contentType) {
+            case "markdown":
+            case "plaintext":
+                return (
+                    <div className = "form-group">
+                        <label>Content</label>
+                        <textarea placeholder = "Write your content here!"
+                                  name="content"
+                                  onChange = {this.handleChange}
+                                  className="form-control"
+                                  rows="6"
+                        />
+                    </div>
+                );
+            case "document":
+                //TODO: Refactor upload function to allow for file uploads.
+                return (
+                    <p>Not implemented... yet.</p>
+                );
+            default:
+                return;
+
+        }
     }
 
 
