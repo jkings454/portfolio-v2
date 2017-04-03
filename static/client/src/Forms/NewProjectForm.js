@@ -4,11 +4,10 @@
 const React = require('react');
 const TextInput = require('./TextInput');
 const showdown = require('showdown');
-const converter = new showdown.Converter();
 
 const NewProjectForm = React.createClass({
     getInitialState: function() {
-        return {courses: []}
+        return {courses: [], uploadStatus: "", uploadPercent: 0}
     },
     // What courses can we add to? Let's find out.
     componentDidMount: function(){
@@ -75,6 +74,11 @@ const NewProjectForm = React.createClass({
                             <div className="form-group">
                                 <label>Upload Image</label>
                                 <input type="file" onChange={this.fileChange} accept="image/*"/>
+                                &nbsp;<span className = "text-muted">{
+                                    this.state.uploadStatus + " " + (
+                                        this.state.uploadPercent ? this.state.uploadPercent + "% complete" : ""
+                                    )
+                                }</span>
                             </div>
                         )
                     }
@@ -112,11 +116,15 @@ const NewProjectForm = React.createClass({
         if (!file) {
             return;
         }
+        this.setState({uploadStatus: "Getting Signed Request..."});
         this.getSignedRequest(file);
     },
     uploadFile(file, data, url) {
-            console.log(data);
+            this.setState({uploadStatus: "Uploading...", uploadPercent:0});
             let form_data = new FormData();
+
+            let trackUploaderProgress = this.trackUploaderProgress;
+
             for (var key in data.fields) {
                 form_data.append(key, data.fields[key])
             }
@@ -125,14 +133,19 @@ const NewProjectForm = React.createClass({
             $.ajax({
                 method: "POST",
                 url: data.url,
+                chunking: true,
                 data: form_data,
                 processData: false,
                 contentType: false,
                 success: (data) => (this.imageSuccess((url)))
+            }).progress(function(e, chunk){
+                trackUploaderProgress();
+                console.log(chunk);
             });
     },
     getSignedRequest: function(file) {
         let uploadFile = this.uploadFile;
+        let trackUploaderProgress = this.trackUploaderProgress;
         $.ajax({
             url: "/sign_s3",
             data: {
@@ -147,10 +160,13 @@ const NewProjectForm = React.createClass({
             success: function(data) {
                 uploadFile(file, data.s3_data, data.url)
             }
-        })
+        }).progress(function(){
+            trackUploaderProgress();
+        });
     },
     imageSuccess: function(url) {
-        this.props.getImageFile(url)
+        this.props.getImageFile(url);
+        this.setState({uploadStatus: "Done."});
     },
     renderTextProjectForm: function() {
         switch (this.state.contentType) {
@@ -176,6 +192,12 @@ const NewProjectForm = React.createClass({
                 return;
 
         }
+    },
+    trackUploaderProgress: function() {
+        let currentProgress = this.state.uploadPercent;
+        currentProgress++;
+
+        this.setState({uploadPercent: currentProgress});
     }
 
 

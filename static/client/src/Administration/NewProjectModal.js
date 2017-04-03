@@ -111,8 +111,11 @@ const NewProjectModal = React.createClass({
         this.context.router.push("/projects");
     },
     getImageFile: function (url) {
-        this.setState({imageUrl: url})
+        this.setState({imageUrl: url});
     },
+    getTextFile: function(url)  {
+        this.setState({content: url});
+    }
 
 });
 
