@@ -5,15 +5,21 @@
  */
 const React = require('react');
 const ImageLoader = require('../ImageLoader');
+const Project = require("./Project");
+
 const Projects = React.createClass({
     getInitialState: function() {
         return {projects: [], loaded: false}
     },
     componentDidMount: function() {
+        let url = this.props.params.course_id ?
+            ('/api/v1/courses/' + this.props.params.course_id + "/projects") : "/api/v1/projects";
+
+        url += this.props.location.search;
         $.ajax({
             cache: true,
             dataType: 'json',
-            url: '/api/v1/projects',
+            url: url,
             success: this.successCallback
         })
     },
@@ -22,7 +28,7 @@ const Projects = React.createClass({
     },
     render: function() {
         let loggedIn = this.props.authenticated;
-        let deleteProject = this.deleteProject;
+        let deleteProject = this.props.deleteProjectCallback;
         if (!this.state.loaded) {
             return (
                 <div className="container">
@@ -30,63 +36,52 @@ const Projects = React.createClass({
                 </div>
             )
         }
-        let renderText = this.renderText;
+        let project_id = this.props.params.project_id || "";
+
+        let expanded_project = null;
+
+        if (project_id) {
+            this.state.projects.forEach(function(project) {
+                if (project.id == project_id) {
+                    expanded_project = project;
+                }
+            })
+        }
+
         return (
             <div className = "container">
-                {this.state.projects.map(function(project){
-                    return (
-                        <div key = {project.id}>
-                            <h1>{project.name}</h1>
-                            {
-                                project.type=="image_project" &&
-                                    <ImageLoader src={project.image_url}/>
-                            }
-                            {
-                                project.type == "text_project" &&
-                                    renderText(project.content_type, project.content)
-                            }
-                            <p>{project.description}</p>
-                            {
-                                loggedIn &&
-                                <a href = "#" onClick = {() => deleteProject(project.id)}>
-                                    Delete project
-                                </a>
-                            }
-                        </div>);
-                })}
+                {
+                    expanded_project && (
+                        <Project
+                            project={expanded_project}
+                            deleteCallback={deleteProject}
+                            authenticated={loggedIn}
+                            expanded={true}
+                        />
+                    )
+                }
+                {
+                    this.state.projects.map(function(project)
+                    {
+                        if (!(project_id == project.id))
+                        {
+                            return (
+                                <Project
+                                    key={project.id}
+                                    project={project}
+                                    expanded={false}
+                                    deleteCallback={deleteProject}
+                                    authenticated={loggedIn}
+                                />
+                            );
+                        }
+                    })
+                }
 
             </div>
         )
     },
-    deleteProject: function(projectID) {
-        if (confirm("Delete this project?")) {
-            $.ajax({
-                method: "DELETE",
-                dataType: "json",
-                url: "/api/v1/projects/" + projectID,
-                success: this.deleteSuccess,
-                headers: {
-                    authorization: "Bearer " + this.props.token,
-                }
-            })
-        }
-    },
-    deleteSuccess: function(data) {
-        alert("\"" + data.name + "\" was successfully deleted!");
-        location.reload();
-    },
-    renderText: function(contentType, content) {
-        if (contentType == "markdown") {
-            content = {__html: content};
-            return (<div dangerouslySetInnerHTML={content}></div>);
-        }
-        else if (contentType == "plaintext") {
-            return <pre>{content}</pre>
-        }
-        else {
-            return <p className="text-danger">This type of content cannot be displayed (yet)</p>
-        }
-    },
+
 });
 
 module.exports = Projects;

@@ -79,6 +79,7 @@ const NewProjectModal = React.createClass({
                                 handleChange={this.handleChange}
                                 hindsight={this.setInitialCourse}
                                 getImageFile={this.getImageFile}
+                                getTextFile={this.getTextFile}
                                 token={this.props.token}
                             />
                         </div>
@@ -97,7 +98,7 @@ const NewProjectModal = React.createClass({
     handleChange: function (e) {
         let value = e.target.value;
         let name = e.target.name;
-        if (name=="content" && this.state.contentType == "markdown") {
+        if (name === "content" && this.state.contentType === "markdown") {
             value = converter.makeHtml(value);
         }
         this.setState({[name]: value});

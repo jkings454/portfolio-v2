@@ -9,6 +9,7 @@ const Admin = require("./Administration/Admin");
 const Login = require("./Authentication/Login");
 const Courses = require("./Courses/Courses");
 const Course = require("./Courses/Course");
+const TransitionGroup = require("react-transition-group/CSSTransitionGroup");
 
 import {Router, Route, Link, browserHistory, IndexRoute} from 'react-router'
 
@@ -67,11 +68,29 @@ const App = React.createClass({
         sessionStorage.tokenExpiresAt = 0;
         this.setState({authenticated: false, token: ""})
     },
+    deleteProject: function(projectID) {
+        if (confirm("Delete this project?")) {
+            $.ajax({
+                method: "DELETE",
+                dataType: "json",
+                url: "/api/v1/projects/" + projectID,
+                success: this.deleteSuccess,
+                headers: {
+                    authorization: "Bearer " + this.state.token,
+                }
+            })
+        }
+    },
+    deleteSuccess: function(data) {
+        alert("\"" + data.name + "\" was successfully deleted!");
+        location.reload();
+    },
     render: function() {
         const clonedChildren = React.cloneElement(this.props.children, {
             authenticated: this.state.authenticated,
             token: this.state.token,
-            loginCallback: this.onLogin
+            loginCallback: this.onLogin,
+            deleteProjectCallback:this.deleteProject,
         });
         return (
             <div className = "wrapper">
@@ -81,7 +100,14 @@ const App = React.createClass({
                     onLogout = {this.onLogout}
                     token={this.state.token}
                 />}
-                {clonedChildren}
+                <TransitionGroup
+                    component="div"
+                    transitionName="basic-fade"
+                    transitionEnterTimeout={1000}
+                    transitionLeaveTimeout={1000}
+                >
+                    {clonedChildren}
+                </TransitionGroup>
             </div>);
     }
 });
@@ -93,10 +119,13 @@ ReactDOM.render(
             <Route path = "login" component = {Login}/>
             <Route path = "blog" component = {null}/>
             <Route path = "projects" component = {Projects}>
-                <Route path=":id" component = {Project}/>
+                <Route path=":project_id" component = {Project}/>
             </Route>
             <Route path="courses" component = {Courses}>
-                <Route path=":id" component = {Course}/>
+                <Route path=":course_id" component = {Course}/>
+            </Route>
+            <Route path="courses/:course_id/projects" component = {Projects}>
+                <Route path=":project_id" component = {Project}/>
             </Route>
         </Route>
     </Router>,

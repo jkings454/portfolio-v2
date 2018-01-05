@@ -25,7 +25,7 @@ const NewProjectForm = React.createClass({
     },
     render: function() {
         let courses = this.state.courses;
-        if (!courses || courses.length == 0) {
+        if (!courses || courses.length === 0) {
             return <h4 className="text-danger">There are no courses to add a project to.</h4>;
         }
         else {
@@ -70,7 +70,7 @@ const NewProjectForm = React.createClass({
                         </select>
                     </div>
                     {
-                        (this.state.projectType == "image_project") && (
+                        (this.state.projectType === "image_project") && (
                             <div className="form-group">
                                 <label>Upload Image</label>
                                 <input type="file" onChange={this.fileChange} accept="image/*"/>
@@ -83,7 +83,7 @@ const NewProjectForm = React.createClass({
                         )
                     }
                     {
-                        (this.state.projectType == "text_project") && (
+                        (this.state.projectType === "text_project") && (
                             <div>
                                 <div className="form-group">
                                     <label>Content Type</label>
@@ -121,9 +121,14 @@ const NewProjectForm = React.createClass({
     },
     uploadFile(file, data, url) {
             this.setState({uploadStatus: "Uploading...", uploadPercent:0});
+
+            let fileType = file.type;
+
             let form_data = new FormData();
 
             let trackUploaderProgress = this.trackUploaderProgress;
+            let imageSuccess = this.imageSuccess;
+            let fileSuccess = this.fileSuccess;
 
             for (var key in data.fields) {
                 form_data.append(key, data.fields[key])
@@ -137,7 +142,14 @@ const NewProjectForm = React.createClass({
                 data: form_data,
                 processData: false,
                 contentType: false,
-                success: (data) => (this.imageSuccess((url)))
+                success: function(data) {
+                    if (fileType.search("image") > -1) {
+                        imageSuccess(url);
+                    }
+                    else {
+                        fileSuccess(url);
+                    }
+                }
             }).progress(function(e, chunk){
                 trackUploaderProgress();
                 console.log(chunk);
@@ -164,6 +176,10 @@ const NewProjectForm = React.createClass({
             trackUploaderProgress();
         });
     },
+    fileSuccess: function(url) {
+        this.props.getTextFile(url);
+        this.setState({uploadStatus: "Done"});
+    },
     imageSuccess: function(url) {
         this.props.getImageFile(url);
         this.setState({uploadStatus: "Done."});
@@ -184,9 +200,17 @@ const NewProjectForm = React.createClass({
                     </div>
                 );
             case "document":
-                //TODO: Refactor upload function to allow for file uploads.
+                //TODO: Pray that this works.
                 return (
-                    <p>Not implemented... yet.</p>
+                    <div className = "form-group">
+                        <label>Upload File</label>
+                        <input type="file" onChange={this.fileChange} accept="*"/>
+                        &nbsp;<span className = "text-muted">{
+                            this.state.uploadStatus + " " + (
+                                this.state.uploadPercent ? this.state.uploadPercent + "% complete" : ""
+                            )
+                        }</span>
+                    </div>
                 );
             default:
                 return;

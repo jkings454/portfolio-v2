@@ -64,6 +64,13 @@ def get_course(course_id):
     # React will take care of the logic here.
     return render_template("index.html")
 
+@app.route("/courses/<int:course_id>/projects")
+def get_course_projects(course_id):
+    return render_template("index.html")
+
+@app.route("/courses/<int:course_id>/projects/<int:project_id>")
+def get_course_project(course_id, project_id):
+    return render_template("index.html")
 
 # COURSES
 @app.route("/api/v1/courses")
@@ -106,7 +113,8 @@ def get_api_course_projects(course_id):
     query = session.query(Project).filter_by(course_id=course_id)
 
     if search:
-        query = query.filter(or_(Project.description.contains(search), Project.name.contains(search)))
+        query = query.filter(or_(Project.description.ilike("%" + search + "%"),
+                                 Project.name.ilike("%" + search + "%")))
 
     if limit:
         query = query.limit(limit)
@@ -137,7 +145,8 @@ def get_api_projects():
     query = session.query(Project)
     if search:
         for prop in search.split(" "):
-            query = query.filter(or_(Project.description.ilike("%" + prop + "%"), Project.name.ilike("%" + prop + "%")))
+            query = query.filter(or_(Project.description.ilike("%" + prop + "%"),
+                                     Project.name.ilike("%" + prop + "%")))
 
     if limit:
         query = query.limit(limit)
